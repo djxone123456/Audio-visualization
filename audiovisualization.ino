@@ -1,4 +1,4 @@
-// Author: Nguyen Dinh Nhan - written on 5Jan2023 - Team Ra Dẻ participated in LED Hackathon of NES HCMUS
+// Author: Nhanrunandgo - written on 5Jan2023 - Team Ra Dẻ participated in LED Hackathon of NES HCMUS
 int Prev = 0;
 void OnAir(int Present)
 {
