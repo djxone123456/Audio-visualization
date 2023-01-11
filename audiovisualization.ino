@@ -10,7 +10,7 @@ void OnAir(int Present)
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(9600);
+  //Serial.begin(9600);
   pinMode(A2, INPUT);
 
   for(int i = 2; i <= 12; i++)
@@ -18,23 +18,37 @@ void setup() {
 }
 
 int cnt = 0, val;
-int Min = 1000, Max = -1000; // Assume they are infinity
+int Min = 1000, Max = 350; // Assume they are infinity
+int ActiveLights;
+const int sampleWindow = 50; // Sample window width in mS (50 mS = 20Hz)
+unsigned int sample;
+
 void loop() {
   // put your main code here, to run repeatedly:
-  val = analogRead(A2);
-  if(cnt++ < 20) // Take 20 samples 
-  {
-    Min = min(Min, val);
-    Max = max(Max, val);
-  }
-  else // Then process
-  {
-    int ActiveLights = map(Max - Min, 0, 250, 1, 12);
-    OnAir(ActiveLights); // Control Leds to follow the present value
-    Serial.println(ActiveLights);
+  unsigned long startMillis= millis();  // Start of sample window
+  unsigned int peakToPeak = 0;   // peak-to-peak level
 
-    // Reset the values
-    cnt = 0;
-    Min = 1000, Max = -1000;
+  unsigned int signalMax = 0;
+  unsigned int signalMin = 1024;
+
+  while (millis() - startMillis < sampleWindow)
+  {
+    sample = analogRead(A2); 
+    if (sample < 1024)  // toss out spurious readings
+    {
+        if (sample > signalMax)
+        {
+          signalMax = sample;  // save just the max levels
+        }
+        else if (sample < signalMin)
+        {
+          signalMin = sample;  // save just the min levels
+        }
+    }
   }
+  peakToPeak = signalMax - signalMin;
+  //Serial.println(peakToPeak);
+
+  ActiveLights = map(peakToPeak, 0, 100, 1, 12);
+  OnAir(ActiveLights);
 }
